@@ -1,4 +1,4 @@
-package com.oocl.chatclient.protocol;
+package com.oocl.protocol;
 
 import java.io.Serializable;
 
@@ -113,6 +113,12 @@ public class Protocol implements Serializable {
 
 	public void setTime(long time) {
 		this.time = time;
+	}
+
+	@Override
+	public String toString() {
+		return "Protocol [action=" + action + ", from=" + from + ", to=" + to
+				+ ", msg=" + msg + ", time=" + time + "]";
 	}
 
 }
