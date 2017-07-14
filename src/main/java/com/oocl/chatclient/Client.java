@@ -5,9 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Vector;
 
 import com.oocl.chatclient.frame.ChatFrame;
@@ -27,19 +25,12 @@ public class Client extends Thread {
 	private ObjectOutputStream oos;
 	private boolean flagRun = false;
 	private ChatFrame chatFrame;
-	private LoginFrame loginFrame;
-	/**
-	 * 在线人数
-	 */
-	private List<String> userOnline;
 	private String userName = null;
 	private Protocol response;
 
-	public Client() {
-		userOnline = new ArrayList<String>();
-	}
+	public Client() {}
 	
-	public String login(String userName, String hostIp, String hostPort) {
+	public String login(String userName, String pwd, String hostIp, String hostPort) {
 		this.userName = userName;
 		Protocol loginRequest = null;
 		String loginResult = null;
@@ -62,7 +53,7 @@ public class Client extends Thread {
 			loginResult = "无效主机Host";
 			return loginResult;
 		} catch (IOException e) {
-			loginResult = "程序错误：[IOException]";
+			loginResult = "程序错误：[无法连接到主机HOST]";
 			return loginResult;
 		} catch (ClassNotFoundException e) {
 			loginResult = "程序错误：[ClassNotFoundException]";
@@ -89,9 +80,8 @@ public class Client extends Thread {
 				}
 			} catch (ClassNotFoundException e) {
 				flagRun = false;
-				e.printStackTrace();
 			} catch (IOException e) {
-				e.printStackTrace();
+				flagRun = false;
 			}
 			
 			//接收服务器
@@ -101,11 +91,9 @@ public class Client extends Thread {
 						this.chatFrame.appendDisMsg(response.getFrom(), response.getTo(), response.getMsg(), response.getTime());	
 					}
 				}else if(response.getAction() == Action.NotifyLogin){
-					//某人上线用户
-					System.out.println(response);
+					this.chatFrame.appendLoginLogoutMsg(response.getFrom(), response.getTime(), true);
 				}else if(response.getAction() == Action.NotifyLogout){
-					//某人下线通知
-					System.out.println(response);
+					this.chatFrame.appendLoginLogoutMsg(response.getFrom(), response.getTime(), false);
 				}else if(response.getAction() == Action.Shake){
 					if(!response.getFrom().equals(this.userName)){
 						this.chatFrame.shakeWindow(response.getFrom(), response.getTime());
@@ -194,20 +182,7 @@ public class Client extends Thread {
 	public void setFlagRun(boolean flagRun) {
 		this.flagRun = flagRun;
 	}
-	
-	private void setLoginFrame(LoginFrame loginFrame) {
-		this.loginFrame=loginFrame;
-	}
 
-	/**
-	 * 
-	 * @param username
-	 * @param pwd
-	 * @return "true" for loginSuc,otherwise failMsg
-	 */
-	public String login(String username, String pwd) {
-		return this.login(username, "127.0.0.1", "8889");
-	}
 	/**
 	 * send to person
 	 * @param msg
@@ -226,13 +201,6 @@ public class Client extends Thread {
 		Protocol request = new Protocol(Action.Shake, this.userName, toWho, null, time);
 		this.sendMessage(request);
 	}
-	
-	public static void main(String[] args) {
-		Client client = new Client();
-		LoginFrame loginFrame = new LoginFrame(client);
-		client.setLoginFrame(loginFrame);
-		loginFrame.setVisible(true);
-	}
 
 	public String getUserName() {
 		return userName;
@@ -242,5 +210,9 @@ public class Client extends Thread {
 		this.userName = userName;
 	}
 	
-
+	public static void main(String[] args) {
+		Client client = new Client();
+		LoginFrame loginFrame = new LoginFrame(client);
+		loginFrame.setVisible(true);
+	}
 }
