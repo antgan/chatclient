@@ -8,7 +8,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
 
+import com.oocl.chatclient.frame.ChatFrame;
+import com.oocl.chatclient.frame.LoginFrame;
 import com.oocl.protocol.Action;
 import com.oocl.protocol.Protocol;
 
@@ -23,6 +26,8 @@ public class Client extends Thread {
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 	private boolean flagRun = false;
+	private ChatFrame chatFrame;
+	private LoginFrame loginFrame;
 	/**
 	 * 在线人数
 	 */
@@ -67,10 +72,13 @@ public class Client extends Thread {
 	}
 
 	/**
-	 * 只负责接收服务端消息。
+	 * 只负责接收服务端消息。 
 	 */
 	@Override
 	public void run() {
+		if(socket.isClosed()){
+			flagRun =false;
+		}
 		while(flagRun){
 			try {
 				Object o = ois.readObject();
@@ -89,20 +97,28 @@ public class Client extends Thread {
 			//接收服务器
 			if(response!=null){
 				if(response.getAction() == Action.Chat){
-					//处理聊天记录
-					System.out.println(response);
+					if(!response.getFrom().equals(this.userName)){
+						this.chatFrame.appendDisMsg(response.getFrom(), response.getTo(), response.getMsg(), response.getTime());	
+					}
 				}else if(response.getAction() == Action.NotifyLogin){
-					//更新在线用户
+					//某人上线用户
 					System.out.println(response);
 				}else if(response.getAction() == Action.NotifyLogout){
-					//更新在线用户
+					//某人下线通知
 					System.out.println(response);
 				}else if(response.getAction() == Action.Shake){
-					System.out.println(response);
-					//振屏
+					if(!response.getFrom().equals(this.userName)){
+						this.chatFrame.shakeWindow(response.getFrom(), response.getTime());
+					}
 				}else if(response.getAction() == Action.List){
-					//更新列表
-					System.out.println(response);
+					String[] users = response.getMsg().split(",");
+					Vector<String> userList = new Vector<String>();
+					for(String s: users){
+						if(!userName.equals(s)){
+							userList.add(s);
+						}
+					}
+					this.chatFrame.updateUserOnline(userList);
 				}else if(response.getAction() == Action.Exit){
 					//服务器退出，全体关闭
 					System.out.println(response);
@@ -118,8 +134,9 @@ public class Client extends Thread {
 	 * 登录成功，聊天框呈现
 	 */
 	public void showChatFrame(String username) {
-//		c_chatFrame = new Client_chatFrame(this,username);
-//		c_chatFrame.setVisible(true);
+		chatFrame=new ChatFrame(this, username);
+		chatFrame.setVisible(true);
+		
 		flagRun = true;
 		this.start();
 	}
@@ -178,19 +195,51 @@ public class Client extends Thread {
 		this.flagRun = flagRun;
 	}
 	
+	private void setLoginFrame(LoginFrame loginFrame) {
+		this.loginFrame=loginFrame;
+	}
+
+	/**
+	 * 
+	 * @param username
+	 * @param pwd
+	 * @return "true" for loginSuc,otherwise failMsg
+	 */
+	public String login(String username, String pwd) {
+		return this.login(username, "127.0.0.1", "8889");
+	}
+	/**
+	 * send to person
+	 * @param msg
+	 * @param toWho
+	 */
+	public void sendMsg(String msg, String toWho) {
+		Protocol request = new Protocol(Action.Chat, this.userName, toWho, msg, new Date().getTime());
+		this.sendMessage(request);
+	}
+
+	/**
+	 * shake person
+	 * @param toWho
+	 */
+	public void shake(String toWho, long time) {
+		Protocol request = new Protocol(Action.Shake, this.userName, toWho, null, time);
+		this.sendMessage(request);
+	}
+	
 	public static void main(String[] args) {
-		Client c = new Client();
-		String result = c.login("Abel", "127.0.0.1", "5000");
-		System.out.println("登录结果："+result);
-		c.setFlagRun(true);
-		c.start();
-		
-		try {
-			Thread.sleep(100000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Client client = new Client();
+		LoginFrame loginFrame = new LoginFrame(client);
+		client.setLoginFrame(loginFrame);
+		loginFrame.setVisible(true);
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 	
 
