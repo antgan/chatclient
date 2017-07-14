@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.TileObserver;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
@@ -33,10 +34,11 @@ import com.oocl.chatclient.Client;
  * @author GANAB
  * 
  */
-public class ChatFrame extends JFrame implements ActionListener,
-		ListSelectionListener {
+public class ChatFrame extends JFrame implements ActionListener, ListSelectionListener {
+	public static final String TITLE_HEAD = "[WTIP Chat]"; 
 	private JTextArea chatTa;
 	private JTextField inputTf;
+	private JButton allBtn;
 	private JButton sendBtn;
 	private JButton shakeBtn;
 	private Client client;
@@ -47,7 +49,7 @@ public class ChatFrame extends JFrame implements ActionListener,
 
 	public ChatFrame(Client client, String username) {
 		this.client = client;
-		this.setTitle("Welcome to WTIP Chat: " + username);
+		this.setTitle(TITLE_HEAD+" "+client.getUserName()+" chat to "+"all.");
 
 		this.setSize(500, 400);
 		this.setResizable(false);
@@ -83,6 +85,8 @@ public class ChatFrame extends JFrame implements ActionListener,
 		users_JScrollPane = new JScrollPane(jlt_disUsers);
 
 		inputTf = new JTextField();
+		allBtn = new JButton("All");
+		allBtn.setBackground(new Color(152,251,152));
 		sendBtn = new JButton("Send");
 		shakeBtn = new JButton("Shake");
 
@@ -92,6 +96,7 @@ public class ChatFrame extends JFrame implements ActionListener,
 		chatTa.setFont(new Font("微软雅黑", Font.BOLD, 13));
 		chatTa.setForeground(Color.blue);
 		
+		panRight.add(allBtn,BorderLayout.NORTH);
 		panRight.add(users_JScrollPane, BorderLayout.CENTER);
 		panRight.setPreferredSize(new Dimension(100, 300));
 		panLeft.add(new JScrollPane(chatTa), BorderLayout.CENTER);
@@ -109,11 +114,19 @@ public class ChatFrame extends JFrame implements ActionListener,
 	private void addEvent() {
 		sendBtn.addActionListener(this);
 		shakeBtn.addActionListener(this);
+		allBtn.addActionListener(this);
 		jlt_disUsers.addListSelectionListener(this);
 	}
 
 	public void actionPerformed(ActionEvent e) {
-
+		
+		if(e.getSource() == allBtn){
+			toWho = "all";
+			jlt_disUsers.clearSelection();
+			setTitle(TITLE_HEAD+" "+client.getUserName()+" chat to "+"all.");
+			allBtn.setBackground(new Color(152,251,152));
+		}
+		
 		if (e.getSource() == sendBtn) {
 			String msg = inputTf.getText().trim();
 			inputTf.setText("");
@@ -230,7 +243,6 @@ public class ChatFrame extends JFrame implements ActionListener,
 
 	public void updateUserOnline(Vector<String> userNames) {
 		model.removeAllElements();
-		model.add(0,"all");
 		for(String userName : userNames){
 			model.addElement(userName);
 		}
@@ -242,6 +254,8 @@ public class ChatFrame extends JFrame implements ActionListener,
 			if(toWho==null){
 				toWho = "all";
 			}
+			allBtn.setBackground(null);
+			setTitle(TITLE_HEAD+" "+client.getUserName()+" chat to "+toWho);
 		}
 	}
 }
