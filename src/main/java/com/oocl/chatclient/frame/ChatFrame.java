@@ -6,9 +6,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.TileObserver;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
@@ -31,7 +32,7 @@ import com.oocl.chatclient.Client;
 /**
  * Chat frame
  * 
- * @author GANAB
+ * @author GANAB,ZERO
  * 
  */
 public class ChatFrame extends JFrame implements ActionListener, ListSelectionListener {
@@ -92,6 +93,20 @@ public class ChatFrame extends JFrame implements ActionListener, ListSelectionLi
 
 		inputTf.setFont(new Font("微软雅黑", Font.BOLD, 13));
 		inputTf.setForeground(Color.black);
+		
+		class MyKeyAdapter extends KeyAdapter{
+			private ChatFrame chatFrame;
+			public MyKeyAdapter(ChatFrame chatFrame){
+				this.chatFrame = chatFrame;
+			}
+			 public void keyPressed(KeyEvent e){
+                 int k = e.getKeyCode();
+                 if(k == e.VK_ENTER){
+                	 chatFrame.sendMsg();
+                 }
+			 }
+		}
+		inputTf.addKeyListener(new MyKeyAdapter(this));
 
 		chatTa.setFont(new Font("微软雅黑", Font.BOLD, 13));
 		chatTa.setForeground(Color.blue);
@@ -128,16 +143,7 @@ public class ChatFrame extends JFrame implements ActionListener, ListSelectionLi
 		}
 		
 		if (e.getSource() == sendBtn) {
-			String msg = inputTf.getText().trim();
-			inputTf.setText("");
-			if ("".equals(msg)) {
-				JOptionPane.showMessageDialog(this,
-						"Cannot send an empty message!");
-			} else {
-				client.sendMsg(msg, toWho);
-				appendDisMsg(client.getUserName(), toWho, msg,
-						new Date().getTime());
-			}
+			sendMsg();
 		}
 		// shakeBtn ActionEvent
 		if (e.getSource() == shakeBtn) {
@@ -147,6 +153,17 @@ public class ChatFrame extends JFrame implements ActionListener, ListSelectionLi
 		}
 	
 
+	}
+	
+	private void sendMsg(){
+		String msg = inputTf.getText().trim();
+		inputTf.setText("");
+		if ("".equals(msg)) {
+			JOptionPane.showMessageDialog(this, "Cannot send an empty message!");
+		} else {
+			client.sendMsg(msg, toWho);
+			appendDisMsg(client.getUserName(), toWho, msg, new Date().getTime());
+		}
 	}
 
 	/**
