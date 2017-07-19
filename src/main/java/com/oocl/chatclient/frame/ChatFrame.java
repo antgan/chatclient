@@ -166,6 +166,10 @@ public class ChatFrame extends JFrame implements ActionListener, ListSelectionLi
 		}
 	}
 
+	public void alertMsg(String msg){
+		JOptionPane.showMessageDialog(this, msg);
+	}
+	
 	/**
 	 * 格式化时间
 	 * 

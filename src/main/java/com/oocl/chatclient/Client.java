@@ -148,7 +148,8 @@ public class Client extends Thread {
 			oos.writeObject(request);
 			oos.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+			chatFrame.alertMsg("Server off line. ");
+			System.exit(0);
 		}
 	}
 	
