@@ -17,6 +17,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import com.oocl.chatclient.Client;
+import com.oocl.chatclient.util.ClientConfig;
 
 public class LoginFrame extends JFrame implements ActionListener{
 	private JLabel nameLb;
@@ -29,9 +30,7 @@ public class LoginFrame extends JFrame implements ActionListener{
 	private JPasswordField pwdTf;
 	private JButton loginBtn;
 	private JButton registerBtn;
-	//service
 	private Client client;
-	//IP
 	private String ip;
 	public LoginFrame(Client client) {
 		this.client=client;
@@ -64,8 +63,8 @@ public class LoginFrame extends JFrame implements ActionListener{
 		this.setLayout(null);
 		
 		serverLb = new JLabel("Server host:");
-		serverIpTf = new JTextField("127.0.0.1");
-		serverPortTf = new JTextField("8889");
+		serverIpTf = new JTextField(ClientConfig.getInstance().CHAT_SERVER_HOST);
+		serverPortTf = new JTextField(ClientConfig.getInstance().CHAT_SERVER_PORT);
 		nameLb=new JLabel("UserName:");
 		nameTf=new JTextField();
 		pwdLb=new JLabel("Password:");
@@ -125,7 +124,7 @@ public class LoginFrame extends JFrame implements ActionListener{
 				}
 				if(!"".equals(pwd)){
 					//登录中心校验，获取token
-					String respMsg = client.validate(userName, pwd, "127.0.0.1" , "8887");
+					String respMsg = client.validate(userName, pwd, ClientConfig.getInstance().LOGIN_SERVER_HOST , ClientConfig.getInstance().LOGIN_SERVER_PORT);
 					if("InvalidToken".equals(respMsg)){
 						JOptionPane.showMessageDialog(this, "User invalid. [Invalid token]");
 					}else{
@@ -134,7 +133,7 @@ public class LoginFrame extends JFrame implements ActionListener{
 							this.setVisible(false);
 							client.showChatFrame(userName);
 						}else{
-							JOptionPane.showMessageDialog(this, "Cannot login. [Invalid token]");
+							JOptionPane.showMessageDialog(this, result);
 						}
 					}
 				}else{

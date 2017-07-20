@@ -107,9 +107,15 @@ public class Client extends Thread {
 			return loginResult;
 		} finally {
 			try {
-				validateOos.close();
-				validateOis.close();
-				validateSocket.close();
+				if(validateOos!=null){
+					validateOos.close();
+				}
+				if(validateOis!=null){
+					validateOis.close();
+				}
+				if(validateSocket!=null){
+					validateSocket.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -121,9 +127,6 @@ public class Client extends Thread {
 	 */
 	@Override
 	public void run() {
-		if(socket.isClosed()){
-			flagRun =false;
-		}
 		while(flagRun){
 			try {
 				Object o = ois.readObject();
@@ -163,7 +166,7 @@ public class Client extends Thread {
 					this.chatFrame.updateUserOnline(userList);
 				}else if(response.getAction() == Action.Exit){
 					//服务器退出，全体关闭
-					System.out.println(response);
+					chatFrame.alertMsg("服务器已关闭！");
 				}else{
 					System.out.println("无效返回值");
 				}

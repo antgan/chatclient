@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import com.oocl.chatclient.util.ClientConfig;
 import com.oocl.protocol.Action;
 import com.oocl.protocol.Protocol;
 
@@ -28,8 +29,6 @@ import com.oocl.protocol.Protocol;
 public class RegisterFrame extends JFrame implements ActionListener{
 	private static final long serialVersionUID = 1L;
 	public static final String TITLE_HEAD = "[Register]"; 
-	private static final int PORT = 8888;
-	private static final String HOST_URL = "127.0.0.1";
 	private Socket socket;
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
@@ -42,7 +41,8 @@ public class RegisterFrame extends JFrame implements ActionListener{
 	private JButton cancelBtn;
 	
 	public RegisterFrame(LoginFrame loginFrame) throws UnknownHostException, IOException {
-		this.socket = new Socket(HOST_URL, PORT);
+		this.socket = new Socket(ClientConfig.getInstance().REGISTER_SERVER_HOST, 
+				Integer.parseInt(ClientConfig.getInstance().REGISTER_SERVER_PORT));
 		oos = new ObjectOutputStream(socket.getOutputStream());
 		ois = new ObjectInputStream(socket.getInputStream());
 		this.loginFrame = loginFrame;
