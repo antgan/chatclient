@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -27,7 +28,7 @@ public class LoginFrame extends JFrame implements ActionListener{
 	private JLabel ipLb;
 	private JPasswordField pwdTf;
 	private JButton loginBtn;
-	private JButton resetBtn;
+	private JButton registerBtn;
 	//service
 	private Client client;
 	//IP
@@ -36,7 +37,6 @@ public class LoginFrame extends JFrame implements ActionListener{
 		this.client=client;
 		init();
 		addEvent();
-		this.setVisible(true);
 	}
 
 
@@ -60,7 +60,6 @@ public class LoginFrame extends JFrame implements ActionListener{
 			}
 		};
 		this.addWindowListener(l);
-		//		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		this.setLayout(null);
 		
@@ -76,7 +75,7 @@ public class LoginFrame extends JFrame implements ActionListener{
 		ipLb.setBounds(75,170,150,30);
 		
 		loginBtn=new JButton("Login");
-		resetBtn=new JButton("Reset");
+		registerBtn=new JButton("Register");
 		serverLb.setBounds(30, 10, 100, 30);
 		serverIpTf.setBounds(120, 10, 100, 30);
 		serverPortTf.setBounds(230, 10, 40, 30);
@@ -88,7 +87,7 @@ public class LoginFrame extends JFrame implements ActionListener{
 		pwdTf.setBounds(120, 90, 150,30);
 		
 		loginBtn.setBounds(60, 130, 90, 30);
-		resetBtn.setBounds(150, 130, 90, 30);
+		registerBtn.setBounds(150, 130, 90, 30);
 		
 		this.add(serverLb);
 		this.add(serverIpTf);
@@ -98,13 +97,13 @@ public class LoginFrame extends JFrame implements ActionListener{
 		this.add(pwdLb);
 		this.add(pwdTf);
 		this.add(loginBtn);
-		this.add(resetBtn);
+		this.add(registerBtn);
 		this.add(ipLb);
 	}
 	
 	private void addEvent() {
 		loginBtn.addActionListener(this);
-		resetBtn.addActionListener(this);
+		registerBtn.addActionListener(this);
 	}
 	
 	
@@ -147,9 +146,16 @@ public class LoginFrame extends JFrame implements ActionListener{
 		}
 		
 		//resetBtn ActionEvent
-		if(e.getSource()==resetBtn){
-			nameTf.setText("");
-			pwdTf.setText("");
+		if(e.getSource()==registerBtn){
+			RegisterFrame registerFrame;
+			try {
+				registerFrame = new RegisterFrame(this);
+			} catch (Exception e1) {
+				JOptionPane.showMessageDialog(this, "Register Server cannot be connect!" );
+				return;
+			}
+			registerFrame.setVisible(true);
+			this.setVisible(false);
 		}
 	}
 	

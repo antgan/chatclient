@@ -2,6 +2,6 @@ package com.oocl.protocol;
 
 public enum Action {
 	
-	Login,Logout,Shake,Chat,List,Exit,NotifyLogin,NotifyLogout;
+	Login,Logout,Shake,Chat,List,Exit,NotifyLogin,NotifyLogout,Register;
 
 }

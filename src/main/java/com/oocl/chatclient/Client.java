@@ -38,13 +38,14 @@ public class Client extends Thread {
 			socket = new Socket(hostIp, Integer.parseInt(hostPort));
 			initStream();//初始化连接
 			loginRequest = new Protocol(Action.Login, this.userName, new Date().getTime());
+			loginRequest.setPwd(pwd);
 			//发送登录请求
 			this.sendMessage(loginRequest);
-			Protocol response = (Protocol)ois.readObject();
+			Protocol response = Protocol.fromJson((String)ois.readObject());
 			if("success".equals(response.getMsg())){
 				return "true";
-			}else if("exist".equals(response.getMsg())){
-				return "用户已存在";
+			}else if("failure".equals(response.getMsg())){
+				return "Username or password is incorrect.";
 			}
 		} catch (NumberFormatException e) {
 			loginResult = "请求参数不正确";
@@ -74,7 +75,7 @@ public class Client extends Thread {
 			try {
 				Object o = ois.readObject();
 				if(o!=null){
-					response = (Protocol)o;
+					response = Protocol.fromJson((String)o);
 				}else{
 					continue;
 				}
@@ -145,7 +146,7 @@ public class Client extends Thread {
 	 */
 	public void sendMessage(Protocol request) {
 		try {
-			oos.writeObject(request);
+			oos.writeObject(request.toJson());
 			oos.flush();
 		} catch (IOException e) {
 			chatFrame.alertMsg("Server off line. ");
@@ -160,7 +161,7 @@ public class Client extends Thread {
 	public void exitChat() {
 		try {
 			Protocol protocol = new Protocol(Action.Logout, this.userName, "server", userName+"退出登录", new Date().getTime());
-			oos.writeObject(protocol);
+			oos.writeObject(protocol.toJson());
 			flagRun = false;
 			System.exit(0);
 		} catch (IOException e) {
