@@ -108,6 +108,10 @@ public class RegisterFrame extends JFrame implements ActionListener{
 				JOptionPane.showMessageDialog(this, "User name cannot be empty! " );
 				return;
 			}
+			if("all".equals(name)){
+				JOptionPane.showMessageDialog(this, "User name cannot be 'all' ! " );
+				return;
+			}
 			if("".equals(pwd)){
 				JOptionPane.showMessageDialog(this, "Password cannot be empty! " );
 				return;

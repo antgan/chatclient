@@ -105,37 +105,37 @@ public class LoginFrame extends JFrame implements ActionListener{
 		loginBtn.addActionListener(this);
 		registerBtn.addActionListener(this);
 	}
-	
-	
-	public static void main(String[] args) {
-		LoginFrame f = new LoginFrame(new Client());
-		f.setVisible(true);
-	}
 
 	public void actionPerformed(ActionEvent e) {
 		//resetBtn ActionEvent
 		if(e.getSource()==loginBtn){
-			String username=nameTf.getText().trim();
-			String pwd=new String(pwdTf.getPassword()).trim();
-			String hostIp=serverIpTf.getText().trim();
-			String hostPort=serverPortTf.getText().trim();
-			if("".equals(hostIp)||"".equals(hostPort)){
+			String userName = nameTf.getText().trim();
+			String pwd = new String(pwdTf.getPassword()).trim();
+			String hostIp = serverIpTf.getText().trim();
+			String hostPort = serverPortTf.getText().trim();
+			if("".equals(hostIp) ||"".equals(hostPort)){
 				JOptionPane.showMessageDialog(this, "Server Host cannot be empty! " );
 				return;
 			}
 			
-			if( !"".equals(username) ){
-				if("all".equals(username)){
+			if( !"".equals(userName) ){
+				if("all".equals(userName)){
 					JOptionPane.showMessageDialog(this, "User name cannot be 'all' ! " );
 					return;
 				}
 				if(!"".equals(pwd)){
-					String respMsg=client.login(username, pwd, hostIp ,hostPort);
-					if("true".equals(respMsg)){
-						this.setVisible(false);
-						client.showChatFrame(username);
+					//登录中心校验，获取token
+					String respMsg = client.validate(userName, pwd, "127.0.0.1" , "8887");
+					if("InvalidToken".equals(respMsg)){
+						JOptionPane.showMessageDialog(this, "User invalid. [Invalid token]");
 					}else{
-						JOptionPane.showMessageDialog(this, respMsg );
+						String result = client.login(userName, respMsg, hostIp, hostPort);
+						if("success".equals(result)){
+							this.setVisible(false);
+							client.showChatFrame(userName);
+						}else{
+							JOptionPane.showMessageDialog(this, "Cannot login. [Invalid token]");
+						}
 					}
 				}else{
 					JOptionPane.showMessageDialog(this, "Password cannot be empty" );

@@ -30,23 +30,27 @@ public class Client extends Thread {
 
 	public Client() {}
 	
-	public String login(String userName, String pwd, String hostIp, String hostPort) {
-		this.userName = userName;
+	/**
+	 * 拿Token 登录聊天服务器
+	 * @param userName
+	 * @param token
+	 * @param hostIp
+	 * @param hostPort
+	 * @return
+	 */
+	public String login(String userName, String token, String hostIp, String hostPort) {
 		Protocol loginRequest = null;
 		String loginResult = null;
 		try {
 			socket = new Socket(hostIp, Integer.parseInt(hostPort));
 			initStream();//初始化连接
 			loginRequest = new Protocol(Action.Login, this.userName, new Date().getTime());
-			loginRequest.setPwd(pwd);
+			loginRequest.setMsg(token);
 			//发送登录请求
-			this.sendMessage(loginRequest);
+			this.sendMessage(this.oos, loginRequest);
 			Protocol response = Protocol.fromJson((String)ois.readObject());
-			if("success".equals(response.getMsg())){
-				return "true";
-			}else if("failure".equals(response.getMsg())){
-				return "Username or password is incorrect.";
-			}
+			//接收登录结果
+			return response.getMsg();
 		} catch (NumberFormatException e) {
 			loginResult = "请求参数不正确";
 			return loginResult;
@@ -60,7 +64,56 @@ public class Client extends Thread {
 			loginResult = "程序错误：[ClassNotFoundException]";
 			return loginResult;
 		}
-		return "false";
+	}
+	
+
+	public String validate(String userName, String pwd, String hostIp, String hostPort) {
+		this.userName = userName;
+		Protocol validateRequest = null;
+		String loginResult = null;
+		Socket validateSocket = null;
+		ObjectOutputStream validateOos = null;
+		ObjectInputStream validateOis = null;
+		try {
+			//与登录中心建立短链接，校验用户，获取token
+			validateSocket = new Socket(hostIp, Integer.parseInt(hostPort));
+			validateOos = new ObjectOutputStream(validateSocket.getOutputStream());
+			validateOis = new ObjectInputStream(validateSocket.getInputStream());
+			
+			validateRequest = new Protocol(Action.Login, this.userName, new Date().getTime());
+			validateRequest.setPwd(pwd);
+			//发送登录请求
+			this.sendMessage(validateOos, validateRequest);
+			
+			Protocol response = Protocol.fromJson((String)validateOis.readObject());
+			//接收令牌
+			if("failure".equals(response.getMsg())){
+				return "InvalidToken";
+			}else{
+				String token = response.getMsg();
+				return token;
+			}
+		} catch (NumberFormatException e) {
+			loginResult = "请求参数不正确";
+			return loginResult;
+		} catch (UnknownHostException e) {
+			loginResult = "无效主机Host";
+			return loginResult;
+		} catch (IOException e) {
+			loginResult = "程序错误：[无法连接到主机HOST]";
+			return loginResult;
+		} catch (ClassNotFoundException e) {
+			loginResult = "程序错误：[ClassNotFoundException]";
+			return loginResult;
+		} finally {
+			try {
+				validateOos.close();
+				validateOis.close();
+				validateSocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -144,7 +197,7 @@ public class Client extends Thread {
 	 * 发送消息
 	 * @param request
 	 */
-	public void sendMessage(Protocol request) {
+	public void sendMessage(ObjectOutputStream oos, Protocol request) {
 		try {
 			oos.writeObject(request.toJson());
 			oos.flush();
@@ -192,7 +245,7 @@ public class Client extends Thread {
 	 */
 	public void sendMsg(String msg, String toWho) {
 		Protocol request = new Protocol(Action.Chat, this.userName, toWho, msg, new Date().getTime());
-		this.sendMessage(request);
+		this.sendMessage(this.oos,request);
 	}
 
 	/**
@@ -201,7 +254,7 @@ public class Client extends Thread {
 	 */
 	public void shake(String toWho, long time) {
 		Protocol request = new Protocol(Action.Shake, this.userName, toWho, null, time);
-		this.sendMessage(request);
+		this.sendMessage(this.oos,request);
 	}
 
 	public String getUserName() {
