@@ -144,6 +144,7 @@ public class RegisterFrame extends JFrame implements ActionListener{
 			return;
 		}else{
 			JOptionPane.showMessageDialog(this, "Register failure! The user name already exists!");
+			this.closeWindow();
 			return;
 		}
 	}
