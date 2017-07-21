@@ -138,6 +138,7 @@ public class Client extends Thread {
 			} catch (ClassNotFoundException e) {
 				flagRun = false;
 			} catch (IOException e) {
+				chatFrame.alertMsg("Server shuts down. ");
 				flagRun = false;
 			}
 			
